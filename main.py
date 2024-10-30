@@ -1,12 +1,14 @@
 import pandas as pd
 from pandas import DataFrame
 
+from sklearn.preprocessing import StandardScaler
+
 from data_service.dataset.services.read import read_csv_file
 from data_service.dataset.services.save import save_csv_file
 from data_service.dataset.plots.curve_plot import CurvePlot
 from data_service.dataset.plots.bar_plot import BarPlot
 from data_service.dataset.preprocessing import CategoricalEncoder
-from data_service.dataset.selection import XYSplit
+from data_service.dataset.selection import XYSplit, TrainTestSplit
 from data_service.dataset.services.utils import (
     get_root_path,
     save_labels_to_txt_file,
@@ -83,3 +85,54 @@ print(x_final.shape)
 print(x_final.columns)
 print(y_final.shape)
 print(y_final.columns)
+
+save_csv_file(
+    dataframe=x_final,
+    file_path=fr"{get_root_path()}/storage/ohe_data/x_ohe.csv"
+)
+save_csv_file(
+    dataframe=y_final,
+    file_path=fr"{get_root_path()}/storage/ohe_data/y_ohe.csv"
+)
+
+x_final = x_final.drop('ФИО', axis=1)
+y_final = y_final.drop('ФИО', axis=1)
+
+scaler = StandardScaler()
+scaler.fit(x_final)
+x_scaled = scaler.transform(x_final)
+
+x_train, x_test, y_train, y_test = TrainTestSplit(
+    x=x_scaled,
+    y=y_final
+).train_test_splitting()
+
+print(x_train.shape)
+print(x_test.shape)
+print(y_train.shape)
+print(y_test.shape)
+
+x_columns = x_final.columns
+y_columns = y_final.columns
+
+x_train_df = pd.DataFrame(x_train, columns=x_columns)
+x_test_df = pd.DataFrame(x_test, columns=x_columns)
+y_train_df = pd.DataFrame(y_train, columns=y_columns)
+y_test_df = pd.DataFrame(y_test, columns=y_columns)
+
+save_csv_file(
+    dataframe=x_train_df,
+    file_path=fr"{get_root_path()}/storage/processed_data/input/x_train.csv"
+)
+save_csv_file(
+    dataframe=x_test_df,
+    file_path=fr"{get_root_path()}/storage/processed_data/input/x_test.csv"
+)
+save_csv_file(
+    dataframe=y_train_df,
+    file_path=fr"{get_root_path()}/storage/processed_data/output/y_train.csv"
+)
+save_csv_file(
+    dataframe=y_test_df,
+    file_path=fr"{get_root_path()}/storage/processed_data/output/y_test.csv"
+)

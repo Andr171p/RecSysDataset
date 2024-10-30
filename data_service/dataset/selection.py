@@ -2,6 +2,8 @@ from pandas import DataFrame
 
 from sklearn.model_selection import train_test_split
 
+from typing import Any
+
 from data_service.configuration.columns import Y_COLUMNS
 
 
@@ -16,11 +18,11 @@ class XYSplit:
 
 
 class TrainTestSplit:
-    def __init__(self, x: DataFrame, y: DataFrame) -> None:
+    def __init__(self, x: Any, y: Any) -> None:
         self._x = x
         self._y = y
 
-    def train_test_split(self, test_size: float = 0.2) -> tuple:
+    def train_test_splitting(self, test_size: float = 0.2) -> tuple:
         x_train, x_test, y_train, y_test = train_test_split(
             self._x, self._y,
             test_size=test_size,
