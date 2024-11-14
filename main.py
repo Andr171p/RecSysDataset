@@ -40,7 +40,7 @@ def curve_plotting(dataframe: DataFrame) -> None:
     curve_plot.curve_column_plot(column='Сумма баллов', file_name='students_scores')
 
 
-curve_plotting(dataframe=df)
+# curve_plotting(dataframe=df)
 
 
 save_labels_to_txt_file(
@@ -59,12 +59,37 @@ def bar_plotting(dataframe: DataFrame) -> None:
     bar_plot.popular_low_exams_rate_students_speciality_plot(exams_rate=170)
 
 
-bar_plotting(dataframe=df)
+# bar_plotting(dataframe=df)
 
 df['Полученное образование'] = df['Полученное образование'].apply(replace_education)
 print(df['Полученное образование'].value_counts())
 
-x, y = XYSplit(dataframe=df).x_y_split()
+df = df.fillna(0)
+
+df_nameless = df.drop('ФИО', axis=1)
+df_ohe = CategoricalEncoder(dataframe=df_nameless).one_hot_encoding()
+print(df_ohe.columns)
+print(df_ohe.shape)
+
+df_final = pd.concat([df['ФИО'], df_ohe], sort=False, axis=1)
+X_COLUMNS = ['ФИО', 'Пол', 'Дата рождения', 'Спорт', 'Иностранное гражданство',
+       'Ср. балл док-та об образовании', 'Сумма баллов',
+       'Сумма баллов за индивидуальные достижения', 'Приказ о зачислении',
+       'Рисунок', 'Математика', 'Русский язык', 'Обществознание', 'Физика',
+       'История', 'Композиция архитектура', 'Композиция дизайн', 'Информатика',
+       'Химия', 'Композиция',
+       'Полученное образование_Высшее образование бакалавриат',
+       'Полученное образование_Среднее общее образование',
+       'Полученное образование_Среднее профессиональное образование',
+       'Форма обучения_Заочная', 'Форма обучения_Очная',
+       'Форма обучения_Очно-заочная']
+df_grouped = df_final.groupby(by=X_COLUMNS,  as_index=False).agg('max')
+print(df_grouped.shape)
+
+# x, y = XYSplit(dataframe=df_grouped).x_y_split()
+
+x = df_grouped[X_COLUMNS]
+y = df_grouped.drop(labels=X_COLUMNS[1::], axis=1)
 
 save_csv_file(
     dataframe=x,
@@ -75,11 +100,14 @@ save_csv_file(
     file_path=fr'{get_root_path()}/storage/x_y_data/outputs.csv'
 )
 
-x_ohe = CategoricalEncoder(dataframe=x[list(x.columns)[1::]]).one_hot_encoding()
-y_ohe = CategoricalEncoder(dataframe=y[list(y.columns)[1::]]).one_hot_encoding()
+# x_ohe = CategoricalEncoder(dataframe=x[list(x.columns)[1::]]).one_hot_encoding()
+# y_ohe = CategoricalEncoder(dataframe=y[list(y.columns)[1::]]).one_hot_encoding()
 
-x_final = pd.concat([x['ФИО'], x_ohe], sort=False, axis=1)
-y_final = pd.concat([y['ФИО'], y_ohe], sort=False, axis=1)
+# x_final = pd.concat([x['ФИО'], x_ohe], sort=False, axis=1)
+# y_final = pd.concat([y['ФИО'], y_ohe], sort=False, axis=1)
+
+x_final = x
+y_final = y
 
 print(x_final.shape)
 print(x_final.columns)
